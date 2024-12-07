@@ -6,6 +6,7 @@ use serde::Deserialize;
 use std::fs::File;
 use std::io::Write;
 use rand::seq::SliceRandom;
+use std::process::Command;
 
 // Deserialize CSV fields into a struct matching your dataset
 #[derive(Debug, Deserialize, Clone)]
@@ -73,13 +74,36 @@ pub fn preprocess_data(records: &Vec<AirbnbCleanedRecord>) -> (Array2<f64>, Arra
 }
 
 // Train decision tree
-pub fn train_decision_tree(features: &Array2<f64>, targets: &Array1<usize>) -> DecisionTree<f64, usize> {
+pub fn train_decision_tree(features: &Array2<f64>, targets: &Array1<usize>, max_depth: Option<usize>, min_impurity_decrease: f64) -> DecisionTree<f64, usize> {
     let dataset = Dataset::new(features.clone(), targets.clone());
 
     DecisionTree::params()
-        .max_depth(Some(3))
+        .max_depth(max_depth)
+        .min_impurity_decrease(min_impurity_decrease)
         .fit(&dataset)
         .expect("Error fitting DecisionTree")
+}
+
+pub fn find_best_max_depth(
+    features: &Array2<f64>, 
+    targets: &Array1<usize>, 
+    depths: &[usize]
+) -> usize {
+    let mut best_depth = 0;
+    let mut best_accuracy = 0.0;
+
+    for &depth in depths {
+        let decision_tree = train_decision_tree(features, targets, Some(depth), 0.01);
+        let accuracy = evaluate_decision_tree(&decision_tree, features, targets);
+
+        if accuracy > best_accuracy {
+            best_depth = depth;
+            best_accuracy = accuracy;
+        }
+    }
+
+    println!("Best max depth: {}, Accuracy: {:.2}%", best_depth, best_accuracy);
+    best_depth
 }
 
 // Evaluate decision tree
@@ -101,6 +125,7 @@ pub fn evaluate_decision_tree(
     (correct_predictions as f64 / test_targets.len() as f64) * 100.0
 }
 
+
 // Export decision tree visualization
 pub fn export_decision_tree(decision_tree: &DecisionTree<f64, usize>) {
     let mut tikz = File::create("decision_tree_example.tex").unwrap();
@@ -113,4 +138,17 @@ pub fn export_decision_tree(decision_tree: &DecisionTree<f64, usize>) {
     )
     .unwrap();
     println!("Decision tree visualization exported to decision_tree_example.tex!");
+}
+
+pub fn compile_to_pdf() {
+    let output = Command::new("pdflatex")
+        .arg("decision_tree_example.tex")
+        .output()
+        .expect("Failed to execute pdflatex");
+
+    if output.status.success() {
+        println!("PDF successfully generated: decision_tree.pdf");
+    } else {
+        eprintln!("Failed to compile LaTeX file. Output: {:?}", output);
+    }
 }
