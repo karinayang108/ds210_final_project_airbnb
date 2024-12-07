@@ -14,8 +14,6 @@ use std::process::Command;
 pub struct AirbnbCleanedRecord {
     pub neighbourhood_group_encoded: u8,
     pub neighbourhood_encoded: u8,
-    pub latitude: f64,
-    pub longitude: f64,
     pub room_type_encoded: u8,
     pub price_category: String,
     pub minimum_nights: u64,
@@ -55,8 +53,6 @@ pub fn preprocess_data(records: &Vec<AirbnbCleanedRecord>) -> (Array2<f64>, Arra
     for record in records {
         features.push(record.neighbourhood_group_encoded as f64);
         features.push(record.neighbourhood_encoded as f64);
-        features.push(record.latitude);
-        features.push(record.longitude);
         features.push(record.room_type_encoded as f64);
         features.push(record.minimum_nights as f64);
         features.push(record.number_of_reviews as f64);
@@ -66,7 +62,7 @@ pub fn preprocess_data(records: &Vec<AirbnbCleanedRecord>) -> (Array2<f64>, Arra
     }
 
     let num_samples = records.len();
-    let features = Array2::from_shape_vec((num_samples, 7), features)
+    let features = Array2::from_shape_vec((num_samples, 5), features)
         .expect("Error creating feature matrix");
     let targets = Array1::from(targets);
 
