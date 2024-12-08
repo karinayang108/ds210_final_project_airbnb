@@ -14,8 +14,6 @@ use std::process::Command;
 pub struct AirbnbCleanedRecord {
     pub neighbourhood_group_encoded: u8,
     pub neighbourhood_encoded: u8,
-    pub latitude: f64,
-    pub longitude: f64,
     pub room_type_encoded: u8,
     pub price_category: String,
     pub minimum_nights: u64,
@@ -47,28 +45,44 @@ pub fn split_data(records: Vec<AirbnbCleanedRecord>, train_ratio: f64) -> (Vec<A
     (train_set, test_set)
 }
 
+pub fn normalize_features(features: &mut Array2<f64>) {
+    for col in 0..features.ncols() {
+        let col_view = features.column(col);
+        let mean = col_view.mean().unwrap_or(0.0);
+        let std = col_view.std(0.0);
+        
+        if std > 0.0 {
+            features.column_mut(col).mapv_inplace(|x| (x - mean) / std);
+        }
+    }
+}
+
 // Preprocess data into features and targets
-pub fn preprocess_data(records: &Vec<AirbnbCleanedRecord>) -> (Array2<f64>, Array1<usize>) {
-    let mut features: Vec<f64> = Vec::new();
-    let mut targets: Vec<usize> = Vec::new();
-    
+pub fn preprocess_data(records: &[AirbnbCleanedRecord]) -> (Array2<f64>, Array1<usize>) {
+    let mut features = Vec::with_capacity(records.len() * 5);
+    let mut targets = Vec::with_capacity(records.len());
+
     for record in records {
         features.push(record.neighbourhood_group_encoded as f64);
         features.push(record.neighbourhood_encoded as f64);
-        features.push(record.latitude);
-        features.push(record.longitude);
         features.push(record.room_type_encoded as f64);
         features.push(record.minimum_nights as f64);
         features.push(record.number_of_reviews as f64);
 
-        // Target is binary: 1 for high price, 0 for low/medium price
-        targets.push(if record.price_category == "high" { 1 } else { 0 });
+        // More explicit target encoding
+        let target = match record.price_category.as_str() {
+            "high" => 2,
+            "medium" => 1,
+            "low" => 0,
+            _ => panic!("Unexpected price category")
+        };
+        targets.push(target);
     }
 
-    let num_samples = records.len();
-    let features = Array2::from_shape_vec((num_samples, 7), features)
+    let mut features = Array2::from_shape_vec((records.len(), 5), features)
         .expect("Error creating feature matrix");
     let targets = Array1::from(targets);
+    normalize_features(&mut features);
 
     (features, targets)
 }
@@ -125,7 +139,6 @@ pub fn evaluate_decision_tree(
     (correct_predictions as f64 / test_targets.len() as f64) * 100.0
 }
 
-
 // Export decision tree visualization
 pub fn export_decision_tree(decision_tree: &DecisionTree<f64, usize>) {
     let mut tikz = File::create("decision_tree_example.tex").unwrap();
@@ -139,6 +152,7 @@ pub fn export_decision_tree(decision_tree: &DecisionTree<f64, usize>) {
     .unwrap();
     println!("Decision tree visualization exported to decision_tree_example.tex!");
 }
+
 
 pub fn compile_to_pdf() {
     let output = Command::new("pdflatex")

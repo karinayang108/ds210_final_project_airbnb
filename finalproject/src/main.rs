@@ -9,7 +9,7 @@ fn main() {
     let raw_file = "AB_NYC_2019.csv";
     let cleaned_file = "cleaned_file.csv";
     // Step 1: Load and clean raw data
-    let _=load_and_clean_data(raw_file, cleaned_file);
+    let _ =load_and_clean_data(raw_file, cleaned_file);
     // Step 2: Load and preprocess cleaned data
     let records = process_csv_file(cleaned_file);
     // Split data into 80% training and 20% testing
@@ -44,11 +44,16 @@ fn main() {
     export_decision_tree(&decision_tree);
     compile_to_pdf();
 
-    let feature_importance = heuristic_feature_importance(&train_features);
+    println!("Calculating feature importance based on the decision tree...");
+    let feature_importance = get_decision_tree_feature_importance(&decision_tree);
     let feature_names = get_feature_names();
-    println!("Feature importance (heuristic - variance-based):");
-    for (index, value) in feature_importance.iter() {
-        let feature_name = feature_names.get(index).unwrap_or(&"Unknown Feature");
-        println!("Feature {}: {} {:.4}", index, feature_name, value);
+
+    println!("Feature importance based on the decision tree:");
+    // Safely iterate through the feature importance
+    for (index, importance) in feature_importance {
+        // Use `unwrap_or` to safely handle missing feature names
+        let feature_name = feature_names.get(&index).unwrap_or(&"Unknown Feature");
+        println!("Feature {}: {} - Importance: {:.4}", index, feature_name, importance);
     }
 }
+

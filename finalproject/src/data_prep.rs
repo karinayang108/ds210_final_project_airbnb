@@ -7,8 +7,6 @@ use std::error::Error;
 pub struct AirbnbRecord {
     pub neighbourhood_group: Option<String>,
     pub neighbourhood: Option<String>,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
     pub room_type: Option<String>,
     pub price: Option<f64>,
     pub minimum_nights: Option<u64>,
@@ -73,7 +71,7 @@ pub fn load_and_clean_data(file_path: &str, output_path: &str) -> Result<(), Box
 
     // Write headers for the cleaned data
     wtr.write_record(&[
-        "neighbourhood_group_encoded", "neighbourhood_encoded", "latitude", "longitude", 
+        "neighbourhood_group_encoded", "neighbourhood_encoded",  
         "room_type_encoded", "price_category", "minimum_nights", "number_of_reviews"
     ])?;
 
@@ -134,10 +132,8 @@ pub fn load_and_clean_data(file_path: &str, output_path: &str) -> Result<(), Box
 
         // Write only the encoded data, no need for the neighbourhood name
         wtr.write_record(&[
-            record.neighbourhood_group_encoded.unwrap_or_default().to_string(),  // just the encoded value, not key-value pair
+            record.neighbourhood_group_encoded.unwrap_or_default().to_string(),  
             record.neighbourhood_encoded.unwrap_or_default().to_string(),
-            record.latitude.unwrap_or_default().to_string(),
-            record.longitude.unwrap_or_default().to_string(),
             record.room_type_encoded.unwrap_or_default().to_string(),
             record.price_category.unwrap_or_default(),
             record.minimum_nights.unwrap_or_default().to_string(),
