@@ -8,10 +8,12 @@ use further_eval::*;
 fn main() {
     let raw_file = "AB_NYC_2019.csv";
     let cleaned_file = "cleaned_file.csv";
+
     // Step 1: Load and clean raw data
     let _ =load_and_clean_data(raw_file, cleaned_file);
     // Step 2: Load and preprocess cleaned data
     let records = process_csv_file(cleaned_file);
+
     // Split data into 80% training and 20% testing
     println!("Splitting data into training and testing sets...");
     let (train_records, test_records) = split_data(records, 0.8);

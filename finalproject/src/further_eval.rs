@@ -12,7 +12,6 @@ pub fn get_decision_tree_feature_importance(decision_tree: &DecisionTree<f64, us
         eprintln!("Warning: The decision tree does not have feature importance values.");
         return Vec::new();
     }
-
     // Map the feature importance to a Vec<(feature_index, importance_value)>
     let mut feature_with_importance: Vec<(usize, f64)> = feature_importance.iter()
         .enumerate()
@@ -39,4 +38,5 @@ pub fn get_feature_names() -> HashMap<usize, &'static str> {
 
     feature_names
 }
+
 

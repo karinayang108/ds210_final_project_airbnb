@@ -14,14 +14,13 @@ pub struct AirbnbRecord {
     pub availability_365: Option<u64>,
 
     // For future use: encoded features
-    pub neighbourhood_group_encoded: Option<u8>, // Store as a single number, not a hashmap
+    pub neighbourhood_group_encoded: Option<u8>, 
     pub neighbourhood_encoded: Option<u8>,
     pub room_type_encoded: Option<u8>,
     pub price_category: Option<String>,
 }
 
 impl AirbnbRecord {
-    // Moved encode_features method directly into the struct
     pub fn encode_features(&mut self, neighbourhood_group_map: &HashMap<String, u8>, neighbourhood_map: &HashMap<String, u8>) {
         // Encode neighbourhood_group with One-Hot Encoding (if available in the map)
         if let Some(ref group) = self.neighbourhood_group {
@@ -71,7 +70,7 @@ pub fn load_and_clean_data(file_path: &str, output_path: &str) -> Result<(), Box
 
     // Write headers for the cleaned data
     wtr.write_record(&[
-        "neighbourhood_group_encoded", "neighbourhood_encoded",  
+        "neighbourhood_group_encoded", "neighbourhood_encoded", 
         "room_type_encoded", "price_category", "minimum_nights", "number_of_reviews"
     ])?;
 
