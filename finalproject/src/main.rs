@@ -27,7 +27,7 @@ fn main() {
 
     // Find the best max_depth for the decision tree
     println!("Finding the best max_depth...");
-    let max_depths = vec![3, 5, 10, 15, 20];
+    let max_depths: Vec<usize> = (3..=50).collect();
     let best_max_depth = find_best_max_depth(&train_features, &train_targets, &max_depths);
     println!("Best max_depth found: {}", best_max_depth);
 
@@ -59,3 +59,77 @@ fn main() {
     }
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{File, remove_file};
+    use std::io::Write;
+    use std::path::Path;
+
+    #[test]
+    fn test_data_pipeline() {
+        // Test CSV file creation and processing
+        let test_input = "neighbourhood_group,room_type,price,minimum_nights,number_of_reviews,availability_365\n\
+                          Brooklyn,Entire home/apt,150.0,2,10,365\n\
+                          Manhattan,Private room,100.0,3,50,180\n\
+                          Queens,Shared room,50.0,1,5,365";
+
+        let test_file_path = "test_data.csv";
+        let output_file_path = "test_cleaned_data.csv";
+
+        // Create test file
+        File::create(test_file_path)
+            .unwrap()
+            .write_all(test_input.as_bytes())
+            .unwrap();
+
+        // Test data loading and cleaning
+        assert!(load_and_clean_data(test_file_path, output_file_path).is_ok());
+        assert!(Path::new(output_file_path).exists());
+
+        // Clean up test files
+        remove_file(test_file_path).unwrap();
+        remove_file(output_file_path).unwrap();
+    }
+
+    #[test]
+    fn test_machine_learning_pipeline() {
+        // Sample data for preprocessing and model training
+        let records = vec![
+            AirbnbCleanedRecord {
+                neighbourhood_group_encoded: 1,
+                room_type_encoded: 0,
+                price_category: "low".to_string(),
+                minimum_nights: 2,
+                number_of_reviews: 10,
+            },
+            AirbnbCleanedRecord {
+                neighbourhood_group_encoded: 2,
+                room_type_encoded: 1,
+                price_category: "medium".to_string(),
+                minimum_nights: 3,
+                number_of_reviews: 5,
+            },
+        ];
+
+        // Test preprocessing
+        let (features, targets) = preprocess_data(&records);
+        assert!(!features.is_empty());
+        assert!(!targets.is_empty());
+        assert_eq!(features.nrows(), records.len());
+        assert_eq!(features.ncols(), 4);
+        assert_eq!(targets.len(), records.len());
+
+        // Test decision tree training
+        let decision_tree = train_decision_tree(&features, &targets, Some(3), 0.01);
+        
+        // Test feature importance
+        let feature_importance = get_decision_tree_feature_importance(&decision_tree);
+        assert!(!feature_importance.is_empty());
+        
+        // Validate model performance
+        let accuracy = evaluate_decision_tree(&decision_tree, &features, &targets);
+        assert!(accuracy > 0.0);
+    }
+}
