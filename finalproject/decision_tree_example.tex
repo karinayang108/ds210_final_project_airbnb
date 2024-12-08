@@ -28,24 +28,16 @@ for tree={
   align=center,
 }   
 }
-}\begin{document}\begin{forest}[Val($2$) $ \leq -0.00$ \\ Imp. $0.15$
-	[Label: 1]
-	[Val($0$) $ \leq 0.24$ \\ Imp. $0.02$
-		[Val($1$) $ \leq 1.57$ \\ Imp. $0.01$
-			[Label: 0]
-			[Val($4$) $ \leq 0.98$ \\ Imp. $0.01$
-				[Label: 1]
-				[Val($4$) $ \leq 2.38$ \\ Imp. $0.04$
-					[Label: 0]
-					[Val($4$) $ \leq 2.71$ \\ Imp. $0.02$
-						[Label: 1]
-						[Val($4$) $ \leq 3.59$ \\ Imp. $0.03$
-							[Label: 0]
-							[Label: 1]]]]]]
-		[Label: 0]]]
+}\begin{document}\begin{forest}[Val($1$) $ \leq 0.25$ \\ Imp. $0.13$
+	[Val($0$) $ \leq 0.38$ \\ Imp. $0.01$
+		[Label: 1]
+		[Label: 2]]
+	[Val($0$) $ \leq 0.88$ \\ Imp. $0.04$
+		[Label: 0]
+		[Label: 1]]]
 \node [anchor=north west] at (current bounding box.north east) {%
                 \begin{tabular}{c c c}
                   \multicolumn{3}{@{}l@{}}{Legend:}\\
-                  Imp.&:&Impurity decrease\\Var(2)&:&feature-2\\Var(0)&:&feature-0\\Var(1)&:&feature-1\\Var(4)&:&feature-4\\\end{tabular}};
+                  Imp.&:&Impurity decrease\\Var(1)&:&feature-1\\Var(0)&:&feature-0\\\end{tabular}};
 	\end{forest}
 \end{document}

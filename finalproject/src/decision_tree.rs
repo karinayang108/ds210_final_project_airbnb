@@ -1,4 +1,4 @@
-use ndarray::{Array2, Array1};
+use ndarray::{Array2, Array1, Axis};
 use linfa_trees::DecisionTree;
 use linfa::prelude::*;
 use linfa::traits::Predict;
@@ -13,14 +13,12 @@ use std::process::Command;
 #[serde(rename_all = "lowercase")]
 pub struct AirbnbCleanedRecord {
     pub neighbourhood_group_encoded: u8,
-    pub neighbourhood_encoded: u8,
     pub room_type_encoded: u8,
     pub price_category: String,
     pub minimum_nights: u64,
     pub number_of_reviews: u64,
 }
 
-// Function to process CSV data into usable Vec<AirbnbCleanedRecord>
 pub fn process_csv_file(file_path: &str) -> Vec<AirbnbCleanedRecord> {
     let mut rdr = csv::Reader::from_path(file_path).unwrap();
     let mut v: Vec<AirbnbCleanedRecord> = Vec::new();
@@ -34,6 +32,7 @@ pub fn process_csv_file(file_path: &str) -> Vec<AirbnbCleanedRecord> {
     v
 }
 
+
 // Function to split the data into train and test sets
 pub fn split_data(records: Vec<AirbnbCleanedRecord>, train_ratio: f64) -> (Vec<AirbnbCleanedRecord>, Vec<AirbnbCleanedRecord>) {
     let mut rng = rand::thread_rng();
@@ -45,26 +44,37 @@ pub fn split_data(records: Vec<AirbnbCleanedRecord>, train_ratio: f64) -> (Vec<A
     (train_set, test_set)
 }
 
-pub fn normalize_features(features: &mut Array2<f64>) {
-    for col in 0..features.ncols() {
-        let col_view = features.column(col);
-        let mean = col_view.mean().unwrap_or(0.0);
-        let std = col_view.std(0.0);
-        
-        if std > 0.0 {
-            features.column_mut(col).mapv_inplace(|x| (x - mean) / std);
-        }
-    }
+pub fn scale_features(features: &Array2<f64>) -> Array2<f64> {
+    // Find the min and max values for each column (axis 0)
+    let min = features.fold_axis(Axis(0), f64::INFINITY, |&a, &b| a.min(b));
+    let max = features.fold_axis(Axis(0), f64::NEG_INFINITY, |&a, &b| a.max(b));
+    
+    let range = &max - &min;
+    
+    let scaled_features: Vec<_> = features
+        .outer_iter()
+        .map(|row| {
+            let row = row.to_owned(); 
+            (row - &min) / &range
+        })
+        .collect();
+
+    let flattened: Vec<f64> = scaled_features.iter().flat_map(|row| row.iter()).cloned().collect();
+
+    Array2::from_shape_vec(
+        (features.nrows(), features.ncols()),
+        flattened,
+    )
+    .unwrap() 
 }
 
 // Preprocess data into features and targets
 pub fn preprocess_data(records: &[AirbnbCleanedRecord]) -> (Array2<f64>, Array1<usize>) {
-    let mut features = Vec::with_capacity(records.len() * 5);
+    let mut features = Vec::with_capacity(records.len() * 4);
     let mut targets = Vec::with_capacity(records.len());
 
     for record in records {
         features.push(record.neighbourhood_group_encoded as f64);
-        features.push(record.neighbourhood_encoded as f64);
         features.push(record.room_type_encoded as f64);
         features.push(record.minimum_nights as f64);
         features.push(record.number_of_reviews as f64);
@@ -79,10 +89,10 @@ pub fn preprocess_data(records: &[AirbnbCleanedRecord]) -> (Array2<f64>, Array1<
         targets.push(target);
     }
 
-    let mut features = Array2::from_shape_vec((records.len(), 5), features)
+    let features = Array2::from_shape_vec((records.len(), 4), features)
         .expect("Error creating feature matrix");
     let targets = Array1::from(targets);
-    normalize_features(&mut features);
+    let features = scale_features(&features);
 
     (features, targets)
 }

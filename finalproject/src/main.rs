@@ -27,7 +27,7 @@ fn main() {
 
     // Find the best max_depth for the decision tree
     println!("Finding the best max_depth...");
-    let max_depths: Vec<usize> = (3..=50).collect();
+    let max_depths: Vec<usize> = (3..=20).collect();
     let best_max_depth = find_best_max_depth(&train_features, &train_targets, &max_depths);
     println!("Best max_depth found: {}", best_max_depth);
 

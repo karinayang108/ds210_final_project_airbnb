@@ -64,8 +64,7 @@ pub fn load_and_clean_data(file_path: &str, output_path: &str) -> Result<(), Box
 
     // Write headers for the cleaned data
     wtr.write_record(&[
-        "neighbourhood_group_encoded",
-        "room_type_encoded", "price_category", "minimum_nights", "number_of_reviews"
+        "neighbourhood_group_encoded","room_type_encoded", "price_category", "minimum_nights", "number_of_reviews"
     ])?;
 
     let mut data: Vec<AirbnbRecord> = Vec::new();

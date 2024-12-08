@@ -2,9 +2,7 @@ use linfa_trees::DecisionTree;
 use std::collections::HashMap;
 
 /// Function to retrieve the feature importance of a pre-trained decision tree
-/// and return it as a sorted list of tuples (feature_index, importance_value)
 pub fn get_decision_tree_feature_importance(decision_tree: &DecisionTree<f64, usize>) -> Vec<(usize, f64)> {
-    // Get feature importance from the pre-trained decision tree
     let feature_importance = decision_tree.feature_importance();
 
     // Check if feature importance is empty and return an empty list if so
@@ -30,11 +28,10 @@ pub fn get_feature_names() -> HashMap<usize, &'static str> {
     let mut feature_names = HashMap::new();
     
     // Define feature names corresponding to their indices
-    feature_names.insert(0, "neighbourhood_group_encoded");
-    feature_names.insert(1, "neighbourhood_encoded");
-    feature_names.insert(2, "room_type_encoded");
-    feature_names.insert(3, "minimum_nights");
-    feature_names.insert(4, "number_of_reviews");
+    feature_names.insert(0, "neighbourhood_encoded");
+    feature_names.insert(1, "room_type_encoded");
+    feature_names.insert(2, "minimum_nights");
+    feature_names.insert(3, "number_of_reviews");
 
     feature_names
 }
